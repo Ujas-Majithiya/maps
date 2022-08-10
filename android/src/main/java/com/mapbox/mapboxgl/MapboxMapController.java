@@ -19,6 +19,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.Choreographer;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -199,6 +200,17 @@ final class MapboxMapController
 
   private CameraPosition getCameraPosition() {
     return trackCameraPosition ? mapboxMap.getCameraPosition() : null;
+  }
+
+  private static void postFrameCallback(Runnable f) {
+    Choreographer.getInstance()
+            .postFrameCallback(
+                    new Choreographer.FrameCallback() {
+                      @Override
+                      public void doFrame(long frameTimeNanos) {
+                        f.run();
+                      }
+                    });
   }
 
   @Override
@@ -1342,8 +1354,10 @@ final class MapboxMapController
     }
     stopListeningForLocationUpdates();
 
-    mapView.onDestroy();
-    mapView = null;
+    postFrameCallback(() -> {
+      mapView.onDestroy();
+      mapView = null;
+    });
   }
 
   @Override

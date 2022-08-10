@@ -1342,8 +1342,10 @@ final class MapboxMapController
     }
     stopListeningForLocationUpdates();
 
-    mapView.onDestroy();
-    mapView = null;
+    postFrameCallback(() -> {
+      mapView.onDestroy();
+      mapView = null;
+    });
   }
 
   @Override
